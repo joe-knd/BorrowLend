@@ -1,0 +1,25 @@
+<div class="app-shell">
+  <header class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-semibold" routerLink="/users/auth">BorrowLend</a>
+
+      <nav class="d-flex flex-wrap gap-2 align-items-center">
+        @if (auth.isAuthenticated()) {
+          <button type="button" class="btn btn-outline-primary btn-sm" (click)="goToBorrowedItems()">My Borrowed Items</button>
+          <button type="button" class="btn btn-outline-primary btn-sm" (click)="goToAvailableItems()">Browse Items</button>
+          <button type="button" class="btn btn-outline-primary btn-sm" (click)="goToMyItems()">My Items</button>
+          <button type="button" class="btn btn-primary btn-sm" (click)="goToCreateItem()">Add Item</button>
+          <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/users', auth.currentUserId()]">Profile</a>
+          <button type="button" class="btn btn-danger btn-sm" (click)="signOut()">Sign Out</button>
+        } @else {
+          <a class="btn btn-outline-primary btn-sm" routerLink="/users/sign-in">Sign In</a>
+          <a class="btn btn-primary btn-sm" routerLink="/users/register">Register</a>
+        }
+      </nav>
+    </div>
+  </header>
+
+  <main class="content container py-3 py-md-4">
+    <router-outlet />
+  </main>
+</div>

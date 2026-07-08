@@ -1,0 +1,34 @@
+<h2>Borrowed Items</h2>
+
+<div class="borrowed-items">
+  @if (isLoading()) {
+    <p>Loading borrowed items...</p>
+  }
+
+  @if (loadError()) {
+    <p class="text-danger">{{ loadError() }}</p>
+  }
+
+  @if (!isLoading() && !loadError() && items().length === 0) {
+    <p>No borrowed items found for this user.</p>
+  }
+
+  @for (record of records(); track record.id) {
+    <div class="card border-0 shadow-sm mb-3 position-relative">
+      <div class="card-body p-0">
+        <app-item-card [item]="record.item"></app-item-card>
+        <div class="px-3 pb-3">
+          <div>
+            <strong>Borrow Status:</strong>
+            <span [style.color]="record.status | statusColor" class="fw-semibold">
+              {{ record.status }}
+            </span>
+            @if (record.status === 'ReturnRequested') {
+              <span class="ms-2 badge bg-danger">⚠️ Owner Requested Return</span>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

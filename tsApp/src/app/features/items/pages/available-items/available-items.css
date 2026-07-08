@@ -1,0 +1,22 @@
+.available-item-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+	padding: 0.5rem 0.5rem 0 0.5rem;
+	border-radius: 0.5rem;
+	border: 1px solid transparent;
+	margin-bottom: 0.5rem;
+}
+
+.available-item-row:hover {
+	background: #f8fafc;
+}
+
+.available-item-row.selected {
+	border-color: #86b7fe;
+	background: #eff6ff;
+}
+
+.item-card-wrapper app-item-card {
+	display: block;
+}

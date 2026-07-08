@@ -1,0 +1,14 @@
+<h2>Rate User</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <label for="userId">User ID</label>
+  <input id="userId" formControlName="userId" />
+
+  <label for="score">Score (1–5)</label>
+  <input id="score" type="number" formControlName="score" min="1" max="5" />
+
+  <label for="comment">Comment</label>
+  <textarea id="comment" formControlName="comment"></textarea>
+
+  <button type="submit">Submit Rating</button>
+</form>

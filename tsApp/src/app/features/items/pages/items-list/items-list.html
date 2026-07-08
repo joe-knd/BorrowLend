@@ -1,0 +1,88 @@
+<h2>My Items</h2>
+
+@if (actionError()) {
+  <div class="alert alert-danger py-2 mb-3">{{ actionError() }}</div>
+}
+
+@if (borrowRequests().length > 0) {
+  <div class="card border-primary mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white py-2">
+      <h3 class="h6 mb-0 text-white">Borrow Requests to Approve</h3>
+    </div>
+    <div class="card-body p-0">
+      <ul class="list-group list-group-flush">
+        @for (request of borrowRequests(); track request.id) {
+          <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+            <div>
+              <strong class="text-primary">{{ request.item.name }}</strong>
+              <div class="small text-muted">
+                Requested by: {{ request.borrower.firstName }} {{ request.borrower.lastName }} ({{ request.borrower.email }})
+                @if (request.borrower.totalRatings > 0) {
+                  <span class="text-warning font-semibold">({{ request.borrower.averageRating | number:'1.1-1' }} ★)</span>
+                }
+              </div>
+              @if (request.notes) {
+                <div class="small mt-1 text-secondary">Notes: "{{ request.notes }}"</div>
+              }
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-success btn-sm px-3" (click)="approveRequest(request)" [disabled]="isActionLoading()">Approve</button>
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="rejectRequest(request)" [disabled]="isActionLoading()">Reject</button>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+}
+
+@if (isLoading()) {
+  <div class="alert alert-info py-2">Loading items...</div>
+}
+
+@if (loadError()) {
+  <div class="alert alert-danger py-2">{{ loadError() }}</div>
+}
+
+@if (!isLoading() && items().length === 0) {
+  <div class="alert alert-info d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between shadow-sm">
+    <span>You do not have any items yet.</span>
+    <span class="d-flex gap-2">
+      <a class="btn btn-primary btn-sm" routerLink="/items/create">Add Item</a>
+      <a class="btn btn-outline-primary btn-sm" routerLink="/items/available">Browse Available Items</a>
+    </span>
+  </div>
+}
+
+<div class="items-list">
+  @for (item of items(); track item.id) {
+    <div class="card border-0 shadow-sm mb-3 position-relative">
+      <div class="card-body p-0">
+        <app-item-card [item]="item"></app-item-card>
+        
+        @if (item.isDisabled) {
+          <span class="badge bg-secondary position-absolute top-0 end-0 m-3 py-2 px-3">Disabled</span>
+        }
+
+        <div class="px-3 pb-3 d-flex gap-2">
+          <button
+            type="button"
+            class="btn btn-sm"
+            [class.btn-outline-secondary]="!item.isDisabled"
+            [class.btn-secondary]="item.isDisabled"
+            (click)="toggleDisable(item)"
+            [disabled]="isActionLoading()">
+            {{ item.isDisabled ? 'Enable Borrowing' : 'Disable Borrowing' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-danger"
+            (click)="deleteItem(item)"
+            [disabled]="isActionLoading() || item.status === 'Borrowed'">
+            Delete Item
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

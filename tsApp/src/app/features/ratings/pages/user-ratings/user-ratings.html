@@ -1,0 +1,22 @@
+<h2>User Ratings</h2>
+
+<div class="ratings">
+  @if (isLoading()) {
+    <div class="alert alert-info">Loading ratings...</div>
+  }
+
+  @if (loadError()) {
+    <div class="alert alert-danger">{{ loadError() }}</div>
+  }
+
+  @if (!isLoading() && !loadError() && ratings().length === 0) {
+    <div class="alert alert-secondary">No ratings found for this user.</div>
+  }
+
+  @for (rating of ratings(); track rating.id) {
+    <div class="rating">
+      <p><strong>Score:</strong> {{ rating.rating ?? rating.score }}</p>
+      <p>{{ rating.comment }}</p>
+    </div>
+  }
+</div>

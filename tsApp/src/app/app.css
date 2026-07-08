@@ -1,0 +1,7 @@
+.app-shell {
+  min-height: 100dvh;
+}
+
+.content {
+  max-width: 980px;
+}

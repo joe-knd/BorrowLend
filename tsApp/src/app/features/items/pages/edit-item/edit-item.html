@@ -1,0 +1,59 @@
+<div class="card border-0 shadow-sm mx-auto" style="max-width: 640px;">
+  <div class="card-body p-4 p-md-5">
+    <h2 class="h4 mb-4">Edit Item</h2>
+
+    @if (isLoading) {
+      <div class="alert alert-secondary py-2">Loading item...</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="mb-3">
+        <label class="form-label" for="name">Name</label>
+        <input class="form-control" id="name" formControlName="name" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="description">Description</label>
+        <textarea class="form-control" id="description" rows="3" formControlName="description"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="image">Replace image (optional)</label>
+        <input class="form-control" id="image" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" (change)="onImageSelected($event)" />
+        <div class="form-text">Supported: jpg, jpeg, png, gif, webp. Max size: 5MB.</div>
+      </div>
+
+      @if (currentImageUrl) {
+        <div class="mb-3">
+          <p class="mb-2 text-muted">Current image from API:</p>
+          <img class="img-fluid rounded border" [src]="currentImageUrl" alt="Current item image" style="max-height: 280px;" />
+        </div>
+      }
+
+      @if (selectedImagePreviewUrl) {
+        <div class="mb-3">
+          <p class="mb-2 text-muted">Selected new image preview:</p>
+          <img class="img-fluid rounded border" [src]="selectedImagePreviewUrl" alt="Selected new image" style="max-height: 280px;" />
+        </div>
+      }
+
+      @if (errorMessage) {
+        <div class="alert alert-danger py-2">{{ errorMessage }}</div>
+      }
+
+      @if (savedItem) {
+        <div class="alert alert-success py-2">Item updated successfully.</div>
+        @if (savedItem.imageUrl) {
+          <div class="mb-3">
+            <p class="mb-2 text-muted">Image returned by API:</p>
+            <img class="img-fluid rounded border" [src]="savedItem.imageUrl" alt="Updated item image" style="max-height: 280px;" />
+          </div>
+        }
+      }
+
+      <button class="btn btn-primary" type="submit" [disabled]="form.invalid || isSubmitting || isLoading">
+        {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </form>
+  </div>
+</div>

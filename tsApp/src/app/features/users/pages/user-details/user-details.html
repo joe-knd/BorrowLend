@@ -1,0 +1,281 @@
+<h2 class="mb-3">User Profile</h2>
+
+@if (isLoadingUser()) {
+  <div class="alert alert-info">Loading user profile...</div>
+}
+
+@if (loadError()) {
+  <div class="alert alert-danger">{{ loadError() }}</div>
+}
+
+@if (actionError()) {
+  <div class="alert alert-danger">{{ actionError() }}</div>
+}
+
+@if (user()) {
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+        <div>
+          <h3 class="h5 mb-1">{{ user()!.firstName }} {{ user()!.lastName }}</h3>
+          <p class="mb-1"><strong>Email:</strong> {{ user()!.email }}</p>
+          <p class="mb-1">
+            <strong>Average Rating:</strong> 
+            @if (user()!.totalRatings > 0) {
+              <span 
+                (click)="selectedDetailUserId.set(userId)"
+                style="cursor: pointer; user-select: none;"
+                title="Click to view detailed reviews"
+                class="text-warning font-semibold">
+                @for (filled of getStarArray(user()!.averageRating); track $index) {
+                  <span [class.text-warning]="filled" [class.text-muted]="!filled">★</span>
+                }
+                <span class="text-dark small ms-1">({{ user()!.averageRating | number:'1.1-1' }})</span>
+              </span>
+            } @else {
+              <span class="text-muted">No ratings yet</span>
+            }
+          </p>
+          <p class="mb-0"><strong>Total Ratings:</strong> {{ user()!.totalRatings }}</p>
+        </div>
+
+        @if (isCurrentUserProfile()) {
+          <div class="d-flex flex-wrap gap-2 align-content-start">
+            <a class="btn btn-outline-primary btn-sm" [routerLink]="['/users', userId, 'edit-password']">Change Password</a>
+            <a class="btn btn-primary btn-sm" routerLink="/items/create">Add Item</a>
+            <a class="btn btn-outline-secondary btn-sm" routerLink="/items">My Items</a>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (isCurrentUserProfile() && borrowRequests().length > 0) {
+  <div class="card border-primary mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white py-2">
+      <h3 class="h6 mb-0 text-white">Borrow Requests to Approve</h3>
+    </div>
+    <div class="card-body p-0">
+      <ul class="list-group list-group-flush">
+        @for (request of borrowRequests(); track request.id) {
+          <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+            <div>
+              <strong class="text-primary">{{ request.item.name }}</strong>
+              <div class="small text-muted">
+                Requested by: {{ request.borrower.firstName }} {{ request.borrower.lastName }}
+                @if (request.borrower.totalRatings > 0) {
+                  <span class="text-warning font-semibold">({{ request.borrower.averageRating | number:'1.1-1' }} ★)</span>
+                }
+              </div>
+              @if (request.notes) {
+                <div class="small mt-1 text-secondary">Notes: "{{ request.notes }}"</div>
+              }
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-success btn-sm px-3" (click)="approveRequest(request)" [disabled]="isActionLoading()">Approve</button>
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="rejectRequest(request)" [disabled]="isActionLoading()">Reject</button>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+}
+
+<h3 class="h5">Borrowed Items</h3>
+@if (isLoadingBorrowed()) {
+  <div class="alert alert-info">Loading borrowed items...</div>
+}
+@if (!isLoadingBorrowed() && activeBorrowedRecords().length === 0) {
+  <div class="alert alert-info shadow-sm">This user has no currently borrowed items.</div>
+}
+@for (record of activeBorrowedRecords(); track record.id) {
+  <div class="card border-0 shadow-sm mb-3 position-relative">
+    <div class="card-body p-0">
+      <app-item-card [item]="record.item"></app-item-card>
+      
+      <div class="px-3 pb-3">
+        <div class="mb-2">
+          <strong>Borrow Status:</strong>
+          <span [style.color]="record.status | statusColor" class="fw-semibold">
+            {{ record.status }}
+          </span>
+          @if (record.status === 'ReturnRequested') {
+            <span class="ms-2 badge bg-danger animate-pulse">⚠️ Owner Requested Return</span>
+          }
+        </div>
+
+        @if (isCurrentUserProfile() && (record.status === 'Borrowed' || record.status === 'ReturnRequested')) {
+          <button type="button" class="btn btn-sm btn-primary" (click)="initiateReturn(record)" [disabled]="isActionLoading()">
+            Return to Owner
+          </button>
+        } @else if (record.status === 'Requested') {
+          <span class="text-muted small">Pending approval by owner</span>
+        } @else if (record.status === 'ReturnPending') {
+          <span class="text-teal small fw-semibold">Waiting for owner return confirmation</span>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<h3 class="h5 mt-4">Lent Items</h3>
+@if (isLoadingLent()) {
+  <div class="alert alert-info">Loading lent items...</div>
+}
+@if (!isLoadingLent() && activeLentRecords().length === 0) {
+  <div class="alert alert-info shadow-sm">This user has not lent any items currently.</div>
+}
+@for (record of activeLentRecords(); track record.id) {
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body p-0">
+      <app-item-card [item]="record.item"></app-item-card>
+
+      <div class="px-3 pb-3">
+        <div class="mb-2">
+          <strong>Lent Status:</strong>
+          <span [style.color]="record.status | statusColor" class="fw-semibold">
+            {{ record.status }}
+          </span>
+          <span class="text-muted small ms-2">
+            (Lent to: 
+            <span 
+              (click)="selectedDetailUserId.set(record.borrowerId)" 
+              style="cursor: pointer; user-select: none;" 
+              class="text-primary text-decoration-underline" 
+              title="Click to view detailed reviews">
+              {{ record.borrower.firstName }} {{ record.borrower.lastName }}
+            </span> 
+            - {{ record.borrower.email }}
+            @if (record.borrower.totalRatings > 0) {
+              <span class="text-warning ms-1">
+                @for (filled of getStarArray(record.borrower.averageRating); track $index) {
+                  <span [class.text-warning]="filled" [class.text-muted]="!filled">★</span>
+                }
+                ({{ record.borrower.averageRating | number:'1.1-1' }})
+              </span>
+            })
+          </span>
+        </div>
+
+        @if (isCurrentUserProfile()) {
+          <div class="d-flex gap-2 flex-wrap">
+            @if (record.status === 'Borrowed') {
+              <button type="button" class="btn btn-sm btn-outline-warning" (click)="requestReturn(record)" [disabled]="isActionLoading()">
+                Request Return
+              </button>
+            }
+            <button type="button" class="btn btn-sm btn-success" (click)="openRatingModal(record, 'return')" [disabled]="isActionLoading()">
+              Confirm Return
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" (click)="openRatingModal(record, 'lost')" [disabled]="isActionLoading()">
+              Mark as Lost
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<h3 class="h5 mt-4">User Ratings</h3>
+@if (isLoadingRatings()) {
+  <div class="alert alert-info">Loading ratings...</div>
+}
+@if (!isLoadingRatings() && ratings().length === 0) {
+  <div class="alert alert-secondary shadow-sm">No ratings found for this user.</div>
+}
+@for (rating of ratings(); track rating.id ?? $index) {
+  <div class="card border-0 shadow-sm mb-2">
+    <div class="card-body py-2">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-warning fw-bold">{{ rating.rating ?? rating.score }} ★</span>
+        <span class="text-muted small">By: {{ rating.raterUser?.firstName || 'User' }}</span>
+      </div>
+      <p class="mb-0 mt-1">{{ rating.comment }}</p>
+    </div>
+  </div>
+}
+
+<!-- Rating Modal Backdrop and Dialog -->
+@if (ratingModalRecord()) {
+  <div class="image-modal-overlay" style="display: flex;">
+    <div class="card shadow-lg p-3" style="width: 100%; max-width: 500px; border-radius: 12px; margin: 1rem;" (click)="$event.stopPropagation()">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="h5 mb-0">
+          @if (ratingModalAction() === 'return') {
+            Confirm Return & Rate Borrower
+          } @else {
+            Mark as Lost & Rate Borrower
+          }
+        </h4>
+        <button type="button" class="btn-close" (click)="closeRatingModal()" aria-label="Close"></button>
+      </div>
+
+      <div class="mb-3">
+        <p class="text-muted small mb-2">
+          Rate <strong>{{ ratingModalRecord()?.borrower?.firstName }} {{ ratingModalRecord()?.borrower?.lastName }}</strong> for item <strong>{{ ratingModalRecord()?.item?.name }}</strong>.
+        </p>
+
+        <label class="form-label font-semibold d-block mb-1">Rating Score</label>
+        <div class="d-flex gap-2 align-items-center mb-3">
+          <div class="d-flex gap-1 fs-3 text-warning">
+            @for (star of [1, 2, 3, 4, 5]; track star) {
+              <span 
+                (click)="ratingScore.set(star)"
+                style="cursor: pointer; user-select: none;"
+                [class.text-muted]="ratingScore() < star"
+                role="button"
+                [title]="star + ' Stars'">
+                ★
+              </span>
+            }
+          </div>
+          <span class="badge bg-light text-dark border ms-2">
+            @switch (ratingScore()) {
+              @case (5) { 5 Stars (Excellent) }
+              @case (4) { 4 Stars (Good) }
+              @case (3) { 3 Stars (Average) }
+              @case (2) { 2 Stars (Poor) }
+              @case (1) { 1 Star (Terrible) }
+            }
+          </span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="modalRatingComment" class="form-label font-semibold">Rating Comment</label>
+        <textarea id="modalRatingComment" class="form-control" rows="3" placeholder="Leave a review for the borrower..." (input)="updateRatingComment($event)"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="modalRatingNotes" class="form-label font-semibold">Transaction Notes (Internal)</label>
+        <textarea id="modalRatingNotes" class="form-control" rows="2" placeholder="Internal notes for this borrow record..." (input)="updateRatingNotes($event)"></textarea>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeRatingModal()">Cancel</button>
+        <button type="button" class="btn" [class.btn-success]="ratingModalAction() === 'return'" [class.btn-danger]="ratingModalAction() === 'lost'" (click)="submitRatingAndAction()" [disabled]="isRatingSubmitting()">
+          @if (isRatingSubmitting()) {
+            Submitting...
+          } @else {
+            @if (ratingModalAction() === 'return') {
+              Confirm Return
+            } @else {
+              Mark as Lost
+            }
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (selectedDetailUserId()) {
+  <app-ratings-detail-modal 
+    [userId]="selectedDetailUserId()!" 
+    (close)="selectedDetailUserId.set(null)">
+  </app-ratings-detail-modal>
+}
+

@@ -1,0 +1,51 @@
+<div class="card border-0 shadow-sm edit-user">
+  <div class="card-body p-4 p-md-5">
+    <h2 class="h4 mb-4">Change Password</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="mb-3">
+        <label class="form-label" for="currentPassword">Current Password</label>
+        <input class="form-control" id="currentPassword" type="password" formControlName="currentPassword" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="password">New Password</label>
+        <input class="form-control" id="password" type="password" formControlName="password" />
+      </div>
+
+      @if (form.get('password')?.errors) {
+        <div class="alert alert-warning py-2">
+          @if (form.get('password')?.errors?.['minLength']) { <p class="mb-1">Minimum 6 characters</p> }
+          @if (form.get('password')?.errors?.['uppercase']) { <p class="mb-1">Must contain an uppercase letter</p> }
+          @if (form.get('password')?.errors?.['lowercase']) { <p class="mb-1">Must contain a lowercase letter</p> }
+          @if (form.get('password')?.errors?.['digit']) { <p class="mb-1">Must contain a digit</p> }
+          @if (form.get('password')?.errors?.['symbol']) { <p class="mb-0">Must contain a symbol</p> }
+        </div>
+      }
+
+      <div class="mb-3">
+        <label class="form-label" for="confirmPassword">Confirm New Password</label>
+        <input class="form-control" id="confirmPassword" type="password" formControlName="confirmPassword" />
+      </div>
+
+      @if (form.errors?.['passwordMismatch']) {
+        <div class="alert alert-danger py-2">Passwords do not match</div>
+      }
+
+      @if (errorMessage) {
+        <div class="alert alert-danger py-2">{{ errorMessage }}</div>
+      }
+
+      @if (successMessage) {
+        <div class="alert alert-success py-2">{{ successMessage }}</div>
+      }
+
+      <div class="actions d-flex gap-2 mt-3">
+        <button class="btn btn-outline-secondary" type="button" (click)="backToProfile()">Back</button>
+        <button class="btn btn-primary" type="submit" [disabled]="form.invalid || isSubmitting">
+          {{ isSubmitting ? 'Saving...' : 'Update Password' }}
+        </button>
+      </div>
+    </form>
+    </div>
+</div>

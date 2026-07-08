@@ -1,0 +1,17 @@
+<h2>Borrow Item</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <label for="itemId">Item ID</label>
+  <input id="itemId" formControlName="itemId" />
+
+  <label for="borrowerId">Borrower ID</label>
+  <input id="borrowerId" formControlName="borrowerId" />
+
+  <label for="startDate">Start Date</label>
+  <input id="startDate" type="date" formControlName="startDate" />
+
+  <label for="endDate">End Date</label>
+  <input id="endDate" type="date" formControlName="endDate" />
+
+  <button type="submit">Borrow</button>
+</form>

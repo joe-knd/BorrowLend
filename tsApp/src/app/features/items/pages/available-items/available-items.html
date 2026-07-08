@@ -1,0 +1,59 @@
+<h2>Available Items</h2>
+
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+  <div class="text-muted">Selected: {{ selectedItemIds().length }}</div>
+  <button
+    type="button"
+    class="btn btn-primary"
+    (click)="borrowSelected()"
+    [disabled]="isLoading() || isSubmittingBorrow() || selectedItemIds().length === 0">
+    @if (isSubmittingBorrow()) {
+      Borrowing...
+    } @else {
+      Confirm Borrow
+    }
+  </button>
+</div>
+
+@if (borrowError()) {
+  <div class="alert alert-danger">{{ borrowError() }}</div>
+}
+
+@if (borrowSuccess()) {
+  <div class="alert alert-success">{{ borrowSuccess() }}</div>
+}
+
+@if (isLoading()) {
+  <div class="alert alert-info">
+    Loading available items...
+  </div>
+}
+
+@if (loadError()) {
+  <div class="alert alert-danger">
+    {{ loadError() }}
+  </div>
+}
+
+@if (!isLoading() && !loadError() && items().length === 0) {
+  <div class="alert alert-info">
+    No items are currently available from other users.
+  </div>
+}
+
+<div class="available-items">
+  @for (item of items(); track item.id) {
+    <label class="available-item-row" [class.selected]="isSelected(item.id)">
+      <input
+        type="checkbox"
+        class="form-check-input"
+        aria-label="Select item"
+        title="Select item"
+        [checked]="isSelected(item.id)"
+        (change)="toggleSelection(item.id)" />
+      <div class="item-card-wrapper w-100">
+        <app-item-card [item]="item"></app-item-card>
+      </div>
+    </label>
+  }
+</div>

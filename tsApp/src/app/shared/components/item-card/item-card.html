@@ -1,0 +1,57 @@
+<div class="item-card">
+  <h3>{{ item.name }}</h3>
+
+  <p>{{ item.description }}</p>
+
+  <p>
+    <strong>Status:</strong>
+    <span [style.color]="item.status | statusColor">
+      {{ item.status }}
+    </span>
+  </p>
+
+  <p>
+    <strong>Owner:</strong>
+    <span 
+      (click)="selectedDetailUserId.set(item.ownerId)" 
+      style="cursor: pointer; user-select: none;"
+      class="text-primary text-decoration-underline" 
+      title="Click to view detailed reviews">
+      {{ item.owner?.firstName || 'Unknown' }} {{ item.owner?.lastName || '' }}
+    </span>
+    @if (item.owner && item.owner.totalRatings > 0) {
+      <span 
+        (click)="selectedDetailUserId.set(item.ownerId)"
+        style="cursor: pointer; user-select: none;"
+        class="text-warning text-nowrap ms-1"
+        title="Click to view detailed reviews">
+        @for (filled of getStarArray(item.owner.averageRating); track $index) {
+          <span [class.text-warning]="filled" [class.text-muted]="!filled">★</span>
+        }
+        ({{ item.owner.averageRating | number:'1.1-1' }})
+      </span>
+    }
+  </p>
+
+  @if (item.imageUrl) {
+    <div class="item-image-container mt-2">
+      <img [src]="item.imageUrl" alt="Item image" class="item-thumbnail" (click)="showFullImage = true" title="Click to zoom" />
+    </div>
+  }
+
+  @if (showFullImage && item.imageUrl) {
+    <div class="image-modal-overlay" (click)="showFullImage = false">
+      <div class="image-modal-content" (click)="$event.stopPropagation()">
+        <img [src]="item.imageUrl" alt="Full item image" class="image-modal-large" />
+        <button type="button" class="image-modal-close" (click)="showFullImage = false" aria-label="Close">&times;</button>
+      </div>
+    </div>
+  }
+</div>
+
+@if (selectedDetailUserId()) {
+  <app-ratings-detail-modal 
+    [userId]="selectedDetailUserId()!" 
+    (close)="selectedDetailUserId.set(null)">
+  </app-ratings-detail-modal>
+}

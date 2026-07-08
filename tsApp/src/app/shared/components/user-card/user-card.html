@@ -1,0 +1,17 @@
+<div class="user-card">
+  <h3>
+    {{ user.firstName }} {{ user.lastName }}
+    @if (user.totalRatings > 0) {
+      <span class="text-warning text-nowrap ms-1">
+        ({{ user.averageRating | number:'1.1-1' }} ★)
+      </span>
+    }
+  </h3>
+
+  <p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>
+  @if (user.totalRatings > 0) {
+    <p class="mb-0 text-muted"><strong>Rating:</strong> {{ user.averageRating | number:'1.1-1' }} ★ ({{ user.totalRatings }} reviews)</p>
+  } @else {
+    <p class="mb-0 text-muted"><strong>Rating:</strong> No reviews yet</p>
+  }
+</div>

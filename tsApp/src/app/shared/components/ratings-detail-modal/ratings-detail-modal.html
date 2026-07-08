@@ -1,0 +1,61 @@
+<div class="image-modal-overlay" (click)="close.emit()">
+  <div class="card shadow-lg p-3" style="width: 100%; max-width: 500px; border-radius: 12px; margin: 1rem; cursor: default;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="h5 mb-0">
+        @if (user()) {
+          Reviews for {{ user()!.firstName }} {{ user()!.lastName }}
+        } @else {
+          User Reviews
+        }
+      </h4>
+      <button type="button" class="btn-close" (click)="close.emit()" aria-label="Close"></button>
+    </div>
+
+    @if (user()) {
+      <div class="mb-3 p-2 bg-light rounded text-center shadow-sm">
+        <div class="fs-4 text-warning">
+          @for (filled of getStarArray(user()!.averageRating); track $index) {
+            <span [class.text-warning]="filled" [class.text-muted]="!filled">★</span>
+          }
+          <span class="fs-6 text-dark ms-2 fw-semibold">{{ user()!.averageRating | number:'1.1-1' }} / 5</span>
+        </div>
+        <div class="small text-muted">{{ user()!.totalRatings }} total reviews</div>
+      </div>
+    }
+
+    <div class="reviews-list-container px-1" style="max-height: 300px; overflow-y: auto;">
+      @if (isLoading()) {
+        <div class="text-center py-4">
+          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          <span class="ms-2 text-muted">Loading reviews...</span>
+        </div>
+      }
+
+      @if (loadError()) {
+        <div class="alert alert-danger py-2">{{ loadError() }}</div>
+      }
+
+      @if (!isLoading() && !loadError() && ratings().length === 0) {
+        <div class="text-center py-4 text-muted">No reviews yet for this user.</div>
+      }
+
+      @for (rating of ratings(); track rating.id ?? $index) {
+        <div class="border-bottom py-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-warning">
+              @for (filled of getStarArray(rating.rating ?? rating.score); track $index) {
+                <span [class.text-warning]="filled" [class.text-muted]="!filled">★</span>
+              }
+            </span>
+            <span class="text-muted small">By: {{ rating.raterUser?.firstName || 'User' }}</span>
+          </div>
+          <p class="mb-0 small text-secondary mt-1">{{ rating.comment }}</p>
+        </div>
+      }
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary btn-sm px-4" (click)="close.emit()">Close</button>
+    </div>
+  </div>
+</div>

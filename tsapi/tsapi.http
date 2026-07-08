@@ -1,0 +1,124 @@
+@tsapi_HostAddress = http://localhost:5234
+
+# BorrowLend API - HTTP Requests
+# 
+# NOTE: Item image uploads use multipart/form-data and require special tooling.
+# For image upload testing, use Swagger UI (https://localhost:7117/) which provides
+# a user-friendly file upload interface.
+# 
+# FEATURES:
+# - Item image uploads (JPG, PNG, GIF, WebP, max 5MB)
+# - Search and filtering (case-insensitive)
+# - Pagination on all list endpoints (default: 10/page, max: 100)
+# - Direct image URLs in responses (e.g., https://localhost:7117/images/items/abc.jpg)
+
+### Register User 1
+POST {{tsapi_HostAddress}}/api/users/register
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "Password123!",
+  "firstName": "Alice",
+  "lastName": "Smith"
+}
+
+### Register User 2
+POST {{tsapi_HostAddress}}/api/users/register
+Content-Type: application/json
+
+{
+  "email": "bob@example.com",
+  "password": "Password123!",
+  "firstName": "Bob",
+  "lastName": "Johnson"
+}
+
+### Get All Users
+GET {{tsapi_HostAddress}}/api/users
+
+### Get User by Email
+GET {{tsapi_HostAddress}}/api/users/email/alice@example.com
+
+### Create Item WITHOUT Image
+# Note: Item creation now expects multipart/form-data for image support.
+# This simple JSON request won't work anymore. Use Swagger UI for creating items with/without images.
+# Or use a tool that supports multipart/form-data (curl, Postman, etc.)
+# Example curl:
+# curl -X POST "http://localhost:5234/api/items" \
+#   -F "name=Lawn Mower" \
+#   -F "description=Electric mower" \
+#   -F "ownerId=user-guid"
+#   -F "image=@photo.jpg"
+
+### Get All Items (with pagination - default page 1, size 10)
+GET {{tsapi_HostAddress}}/api/items
+
+### Get All Items (custom pagination)
+GET {{tsapi_HostAddress}}/api/items?pageNumber=1&pageSize=5
+
+### Search Items by name or description
+GET {{tsapi_HostAddress}}/api/items?searchQuery=mower
+
+### Filter Items by Status
+GET {{tsapi_HostAddress}}/api/items?status=Available
+
+### Combine Search, Filter, and Pagination
+GET {{tsapi_HostAddress}}/api/items?searchQuery=camera&status=Available&pageSize=20
+
+### Get Available Items (with search and pagination)
+GET {{tsapi_HostAddress}}/api/items/available?searchQuery=bike&pageSize=15
+
+### Get Items by Owner (replace {ownerId}, with pagination)
+GET {{tsapi_HostAddress}}/api/items/owned-by/{ownerId}?pageNumber=1&pageSize=10
+
+### Borrow Item (replace {borrowerId} and itemId)
+POST {{tsapi_HostAddress}}/api/borrowings?borrowerId={borrowerId}
+Content-Type: application/json
+
+{
+  "itemId": 1,
+  "dueDate": "2024-12-31T00:00:00Z",
+  "notes": "Need it for the weekend"
+}
+
+### Get Items Borrowed by User (replace {userId})
+GET {{tsapi_HostAddress}}/api/borrowings/borrowed-by/{userId}
+
+### Get Items Lent by User (replace {userId})
+GET {{tsapi_HostAddress}}/api/borrowings/lent-by/{userId}
+
+### Return Item (replace {borrowingId})
+POST {{tsapi_HostAddress}}/api/borrowings/{borrowingId}/return
+Content-Type: application/json
+
+{
+  "notes": "Returned in good condition, thanks!"
+}
+
+### Mark Item as Lost (replace {borrowingId})
+POST {{tsapi_HostAddress}}/api/borrowings/{borrowingId}/lost
+Content-Type: application/json
+
+{
+  "notes": "Unfortunately lost the item"
+}
+
+### Create Rating (replace {raterUserId} and ratedUserId)
+POST {{tsapi_HostAddress}}/api/ratings?raterUserId={raterUserId}
+Content-Type: application/json
+
+{
+  "ratedUserId": "{ratedUserId}",
+  "borrowingRecordId": 1,
+  "rating": 5,
+  "comment": "Excellent borrower, returned on time!"
+}
+
+### Get Ratings for User (replace {userId})
+GET {{tsapi_HostAddress}}/api/ratings/user/{userId}
+
+### Get User with Updated Rating (replace {userId})
+GET {{tsapi_HostAddress}}/api/users/{userId}
+
+###

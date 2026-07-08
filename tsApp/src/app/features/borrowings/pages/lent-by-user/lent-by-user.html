@@ -1,0 +1,34 @@
+<h2>Lent Items</h2>
+
+<div class="lent-items">
+  @if (isLoading()) {
+    <p>Loading lent items...</p>
+  }
+
+  @if (loadError()) {
+    <p class="text-danger">{{ loadError() }}</p>
+  }
+
+  @if (!isLoading() && !loadError() && items().length === 0) {
+    <p>No lent items found for this user.</p>
+  }
+
+  @for (record of records(); track record.id) {
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body p-0">
+        <app-item-card [item]="record.item"></app-item-card>
+        <div class="px-3 pb-3">
+          <div>
+            <strong>Lent Status:</strong>
+            <span [style.color]="record.status | statusColor" class="fw-semibold">
+              {{ record.status }}
+            </span>
+            <span class="text-muted small ms-2">
+              (Lent to: {{ record.borrower.firstName }} {{ record.borrower.lastName }} - {{ record.borrower.email }})
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
